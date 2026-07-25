@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuestro Universo ❤️</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="animations.css">
+  <script src="https://cdn.jsdelivr.net/npm/three@0.161/build/three.min.js"></script>
+</head>
+
+<body>
+
+  <!-- Pantalla de inicio -->
+  <div id="loading">
+    <div class="loader">
+      <div class="sparkles">
+        <span>✨</span>
+        <span>💫</span>
+        <span>✨</span>
+      </div>
+      <h1 class="welcome-title">🌟 Bienvenida Marylin 🌟</h1>
+      <p class="welcome-text">
+        Existe un universo creado solamente para ti...
+      </p>
+      <p class="welcome-subtitle">
+        Un viaje a través de las estrellas, especialmente para ti.
+      </p>
+      <button id="startButton" class="btn-start">
+        Entrar al Universo ❤️
+      </button>
+      <p class="hint">✨ Desplázate o usa las flechas para continuar ✨</p>
+    </div>
+  </div>
+
+  <!-- Canvas 3D -->
+  <canvas id="bg"></canvas>
+
+  <!-- Información Principal -->
+  <div id="overlay" class="section">
+    <div class="content-wrapper">
+      <h1 id="title" class="main-title">
+        Nuestro Universo
+      </h1>
+      <p id="subtitle" class="main-subtitle">
+        Milan ❤️ Marylin
+      </p>
+      <div class="decorative-line"></div>
+      <p class="tagline">Un universo de amor infinito</p>
+    </div>
+  </div>
+
+  <!-- Primer Mensaje -->
+  <div id="messageBox" class="section message-section">
+    <div class="message-content">
+      <h2>Para ti...</h2>
+      <p>
+        Dicen que existen millones de galaxias.<br>
+        Millones de estrellas.<br>
+        Millones de planetas.<br><br>
+        Pero solamente existe una persona capaz de iluminar completamente mi vida.<br><br>
+        <span class="highlight">Esa persona eres tú.</span>
+      </p>
+      <div class="hearts-decoration">❤️ 💕 ❤️</div>
+    </div>
+  </div>
+
+  <!-- Foto -->
+  <div id="photoContainer" class="section photo-section">
+    <div class="photo-wrapper">
+      <img src="assets/foto.jpg" id="photo" alt="Nuestra foto especial">
+      <div class="photo-glow"></div>
+      <p class="photo-caption">Tú eres mi universo</p>
+    </div>
+  </div>
+
+  <!-- Carta de Amor -->
+  <div id="letter" class="section letter-section">
+    <div class="letter-content">
+      <h2>Carta para Marylin ❤️</h2>
+      <div class="letter-divider"></div>
+      <p>
+        Cada segundo contigo se convirtió en uno de los recuerdos más bonitos de mi vida.<br><br>
+        No importa cuántas estrellas existan en el universo...<br><br>
+        Siempre elegiría compartir este pequeño y especial universo contigo.<br><br>
+        <span class="letter-highlight">Gracias por cada sonrisa.</span><br>
+        <span class="letter-highlight">Gracias por cada abrazo.</span><br>
+        <span class="letter-highlight">Gracias por existir.</span><br><br>
+        Te amo infinitamente.<br>
+        Con todo mi corazón.<br><br>
+        <span class="signature">Milan ❤️</span>
+      </p>
+      <div class="letter-decoration">🌹 ✨ 🌹</div>
+    </div>
+  </div>
+
+  <!-- Final - Declaración -->
+  <div id="final" class="section final-section">
+    <div class="final-content">
+      <h1 class="final-title">TE AMO</h1>
+      <h2 class="final-subtitle">MARYLIN ❤️</h2>
+      <p class="final-text">
+        Hasta el infinito...<br>
+        Y mucho más allá.
+      </p>
+      <div class="final-decoration">
+        <span class="heart-pulse">❤️</span>
+        <span class="heart-pulse">💕</span>
+        <span class="heart-pulse">❤️</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio -->
+  <audio id="music" loop>
+    <source src="assets/musica.mp3" type="audio/mp3">
+  </audio>
+
+  <!-- Audio Visualizer Toggle -->
+  <div id="audioControls" class="audio-controls">
+    <button id="musicToggle" class="music-btn" title="Toggle música">🎵</button>
+  </div>
+
+  <!-- Loading indicator -->
+  <div id="loadingIndicator" class="loading-indicator">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="galaxy.js"></script>
+  <script src="particles.js"></script>
+  <script src="camera.js"></script>
+  <script src="fireworks.js"></script>
+  <script src="music.js"></script>
+  <script src="loveLetter.js"></script>
+  <script src="main.js"></script>
+
+</body>
+
+</html>
