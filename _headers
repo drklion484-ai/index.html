@@ -1,0 +1,21 @@
+/*
+  Redirect HTTP to HTTPS
+  Cache static assets for 1 year
+  Set security headers
+*/
+
+# Cache busting for assets
+/assets/* 
+  Cache-Control: max-age=31536000
+  
+# HTML files - no cache
+/*.html
+  Cache-Control: no-cache, no-store, must-revalidate
+  
+# Security headers
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
