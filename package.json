@@ -1,0 +1,26 @@
+{
+  "name": "nuestro-universo",
+  "version": "1.0.0",
+  "description": "Una experiencia inmersiva y romántica con galaxias, estrellas y animaciones",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "build": "echo 'No build required - static site'",
+    "deploy": "git push origin main"
+  },
+  "keywords": [
+    "romantic",
+    "experience",
+    "3d",
+    "galaxy",
+    "love",
+    "interactive",
+    "three.js"
+  ],
+  "author": "drklion484-ai",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drklion484-ai/index.html.git"
+  }
+}
