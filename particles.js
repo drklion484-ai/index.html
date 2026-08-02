@@ -1,178 +1,92 @@
 // ============================================================
 // NUESTRO UNIVERSO ❤️
-// particles.js - Advanced Particle System
+// particles.js - Particle System
 // ============================================================
 
 class ParticleSystem {
   constructor(scene) {
     this.scene = scene;
-    this.particleSystems = [];
+    this.particles = [];
+    this.maxParticles = 10000;
   }
 
-  createExplosion(position, color = 0xff4da6) {
-    const particleCount = 50;
-    const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(particleCount * 3);
-    const velocities = new Float32Array(particleCount * 3);
-
-    for (let i = 0; i < particleCount; i++) {
-      const i3 = i * 3;
-      positions[i3] = position.x;
-      positions[i3 + 1] = position.y;
-      positions[i3 + 2] = position.z;
-
-      const speed = 2 + Math.random() * 3;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.random() * Math.PI;
-
-      velocities[i3] = Math.sin(phi) * Math.cos(theta) * speed;
-      velocities[i3 + 1] = Math.sin(phi) * Math.sin(theta) * speed;
-      velocities[i3 + 2] = Math.cos(phi) * speed;
-    }
-
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-    const material = new THREE.PointsMaterial({
-      color: color,
-      size: 0.5,
-      transparent: true,
-      opacity: 1,
-      sizeAttenuation: true
-    });
-
-    const particles = new THREE.Points(geometry, material);
-    this.scene.add(particles);
-
-    const system = {
-      mesh: particles,
-      positions: positions,
-      velocities: velocities,
-      life: 1,
-      lifeDecay: 0.015,
-      geometry: geometry
-    };
-
-    this.particleSystems.push(system);
-    this.animateExplosion(system);
-  }
-
-  animateExplosion(system) {
-    const animate = () => {
-      if (system.life <= 0) {
-        this.scene.remove(system.mesh);
-        const index = this.particleSystems.indexOf(system);
-        if (index > -1) this.particleSystems.splice(index, 1);
-        return;
-      }
-
-      const positions = system.geometry.attributes.position.array;
-      const count = positions.length / 3;
-
-      for (let i = 0; i < count; i++) {
-        const i3 = i * 3;
-        positions[i3] += system.velocities[i3] * 0.016;
-        positions[i3 + 1] += system.velocities[i3 + 1] * 0.016;
-        positions[i3 + 2] += system.velocities[i3 + 2] * 0.016;
-
-        system.velocities[i3] *= 0.98;
-        system.velocities[i3 + 1] *= 0.98;
-        system.velocities[i3 + 2] *= 0.98;
-        system.velocities[i3 + 1] -= 0.1; // gravity
-      }
-
-      system.geometry.attributes.position.needsUpdate = true;
-      system.mesh.material.opacity = system.life;
-      system.life -= system.lifeDecay;
-
-      requestAnimationFrame(animate);
-    };
-
-    animate();
-  }
-
-  createHeartWave(position) {
-    const colors = [0xff4da6, 0x6d5dfc, 0x38bdf8];
-    for (let i = 0; i < 3; i++) {
-      setTimeout(() => {
-        this.createExplosion(position, colors[i]);
-      }, i * 100);
-    }
-  }
-
-  createRain(count = 100, areaSize = 200) {
-    const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(count * 3);
-    const velocities = new Float32Array(count * 3);
+  createExplosion(config = {}) {
+    const {
+      x = 0,
+      y = 0,
+      z = 0,
+      count = 50,
+      spread = 50,
+      color = 0xff4da6
+    } = config;
 
     for (let i = 0; i < count; i++) {
-      const i3 = i * 3;
-      positions[i3] = (Math.random() - 0.5) * areaSize;
-      positions[i3 + 1] = Math.random() * areaSize + 50;
-      positions[i3 + 2] = (Math.random() - 0.5) * areaSize;
+      const geometry = new THREE.SphereGeometry(0.3, 8, 8);
+      const material = new THREE.MeshBasicMaterial({ color });
+      const particle = new THREE.Mesh(geometry, material);
 
-      velocities[i3] = 0;
-      velocities[i3 + 1] = -1 - Math.random() * 1;
-      velocities[i3 + 2] = 0;
+      particle.position.set(
+        x + (Math.random() - 0.5) * spread,
+        y + (Math.random() - 0.5) * spread,
+        z + (Math.random() - 0.5) * spread
+      );
+
+      particle.velocity = new THREE.Vector3(
+        (Math.random() - 0.5) * 2,
+        (Math.random() - 0.5) * 2,
+        (Math.random() - 0.5) * 2
+      );
+
+      particle.life = 1;
+      particle.decay = 0.02;
+
+      this.scene.add(particle);
+      this.particles.push(particle);
     }
-
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-    const material = new THREE.PointsMaterial({
-      color: 0xffffff,
-      size: 0.3,
-      transparent: true,
-      opacity: 0.6,
-      sizeAttenuation: true
-    });
-
-    const particles = new THREE.Points(geometry, material);
-    this.scene.add(particles);
-
-    const system = {
-      mesh: particles,
-      positions: positions,
-      velocities: velocities,
-      geometry: geometry,
-      areaSize: areaSize,
-      active: true
-    };
-
-    this.animateRain(system);
-    return system;
   }
 
-  animateRain(system) {
-    const animate = () => {
-      if (!system.active) {
-        this.scene.remove(system.mesh);
-        return;
-      }
+  createSparkles(count = 30) {
+    for (let i = 0; i < count; i++) {
+      const geometry = new THREE.SphereGeometry(0.1, 8, 8);
+      const material = new THREE.MeshBasicMaterial({
+        color: new THREE.Color().setHSL(Math.random(), 1, 0.6)
+      });
+      const sparkle = new THREE.Mesh(geometry, material);
 
-      const positions = system.geometry.attributes.position.array;
-      const count = positions.length / 3;
+      sparkle.position.set(
+        (Math.random() - 0.5) * 100,
+        (Math.random() - 0.5) * 100,
+        (Math.random() - 0.5) * 100
+      );
 
-      for (let i = 0; i < count; i++) {
-        const i3 = i * 3;
-        positions[i3] += system.velocities[i3] * 0.016;
-        positions[i3 + 1] += system.velocities[i3 + 1] * 0.016;
-        positions[i3 + 2] += system.velocities[i3 + 2] * 0.016;
+      sparkle.velocity = new THREE.Vector3(
+        (Math.random() - 0.5) * 0.5,
+        (Math.random() - 0.5) * 0.5,
+        (Math.random() - 0.5) * 0.5
+      );
 
-        if (positions[i3 + 1] < -50) {
-          positions[i3 + 1] = Math.random() * system.areaSize + 50;
-        }
-      }
+      sparkle.life = 1;
+      sparkle.decay = 0.01;
 
-      system.geometry.attributes.position.needsUpdate = true;
-      requestAnimationFrame(animate);
-    };
-
-    animate();
+      this.scene.add(sparkle);
+      this.particles.push(sparkle);
+    }
   }
 
-  stopRain(system) {
-    system.active = false;
+  update() {
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const p = this.particles[i];
+
+      p.position.add(p.velocity);
+      p.life -= p.decay;
+      p.material.opacity = p.life;
+
+      if (p.life <= 0) {
+        this.scene.remove(p);
+        this.particles.splice(i, 1);
+      }
+    }
   }
 }
 
-// Initialize particle system with the galaxy scene
-const particleSystem = new ParticleSystem(galaxyScene.scene);
+let particleSystem;

@@ -3,121 +3,50 @@
 // loveLetter.js - Love Letter Interactions
 // ============================================================
 
-class LoveLetterController {
+class LoveLetterManager {
   constructor() {
     this.letterElement = document.getElementById('letter');
-    this.isOpen = false;
     this.init();
   }
 
   init() {
-    this.setupInteractions();
-    this.typewriterEffect();
+    this.setupLetterInteractions();
+    this.addHeartAnimation();
   }
 
-  setupInteractions() {
-    this.letterElement.addEventListener('click', () => {
-      this.toggleLetter();
-    });
+  setupLetterInteractions() {
+    if (!this.letterElement) return;
 
-    // Add hover effect
     this.letterElement.addEventListener('mouseenter', () => {
-      if (!this.isOpen) {
-        this.letterElement.style.transform = 'translate(-50%, -50%) scale(1.05)';
-      }
+      this.letterElement.style.transform = 'scale(1.02) rotateY(1deg)';
     });
 
     this.letterElement.addEventListener('mouseleave', () => {
-      if (!this.isOpen) {
-        this.letterElement.style.transform = 'translate(-50%, -50%) scale(1)';
-      }
-    });
-  }
-
-  toggleLetter() {
-    this.isOpen = !this.isOpen;
-
-    if (this.isOpen) {
-      this.openLetter();
-    } else {
-      this.closeLetter();
-    }
-  }
-
-  openLetter() {
-    this.letterElement.style.transform = 'translate(-50%, -50%) scale(1.2)';
-    this.letterElement.style.boxShadow = '0 0 80px rgba(255, 0, 150, 0.8)';
-
-    // Create particle effect
-    particleSystem.createHeartWave({
-      x: 0,
-      y: 0,
-      z: 50
-    });
-
-    // Camera focus
-    cameraController.zoomTo({ x: 0, y: 0, z: 80 }, 800);
-  }
-
-  closeLetter() {
-    this.letterElement.style.transform = 'translate(-50%, -50%) scale(1)';
-    this.letterElement.style.boxShadow = '0 0 50px rgba(255,255,255,.4), 0 0 120px rgba(255,120,180,.6)';
-
-    cameraController.resetCamera(800);
-  }
-
-  typewriterEffect() {
-    const paragraphs = this.letterElement.querySelectorAll('p');
-    paragraphs.forEach((p, index) => {
-      const originalText = p.textContent;
-      p.textContent = '';
-
-      let charIndex = 0;
-      const typeChar = () => {
-        if (charIndex < originalText.length) {
-          p.textContent += originalText[charIndex];
-          charIndex++;
-          setTimeout(typeChar, 30);
-        }
-      };
-
-      setTimeout(typeChar, index * 100);
+      this.letterElement.style.transform = 'scale(1) rotateY(0deg)';
     });
   }
 
   addHeartAnimation() {
-    const hearts = setInterval(() => {
-      if (!this.isOpen) {
-        clearInterval(hearts);
-        return;
-      }
+    if (!this.letterElement) return;
 
-      const heart = document.createElement('div');
-      heart.innerHTML = '❤️';
-      heart.style.position = 'absolute';
-      heart.style.left = Math.random() * 100 + '%';
-      heart.style.top = '100%';
-      heart.style.fontSize = Math.random() * 20 + 20 + 'px';
-      heart.style.animation = 'heartRise 2.5s linear forwards';
-      heart.style.pointerEvents = 'none';
+    const decoration = this.letterElement.querySelector('.letter-decoration');
+    if (decoration) {
+      decoration.style.animation = 'float 3s ease-in-out infinite';
+    }
+  }
 
-      this.letterElement.appendChild(heart);
+  playRevealAnimation() {
+    if (!this.letterElement) return;
 
-      setTimeout(() => heart.remove(), 2500);
-    }, 300);
+    const paragraphs = this.letterElement.querySelectorAll('p');
+    paragraphs.forEach((p, index) => {
+      p.style.opacity = '0';
+      p.style.animation = `fadeInUp 0.8s ease-out ${index * 0.2}s forwards`;
+    });
   }
 }
 
-// Initialize love letter controller
-const loveLetterController = new LoveLetterController();
-
-// Add letter animation when it shows
-const originalShowLetter = universo?.showLetter;
-if (universo) {
-  universo.showLetter = function() {
-    if (originalShowLetter) {
-      originalShowLetter.call(this);
-    }
-    loveLetterController.addHeartAnimation();
-  };
-}
+let loveLetterManager;
+window.addEventListener('DOMContentLoaded', () => {
+  loveLetterManager = new LoveLetterManager();
+});

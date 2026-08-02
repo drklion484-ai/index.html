@@ -1,74 +1,57 @@
 // ============================================================
 // NUESTRO UNIVERSO ❤️
-// music.js - Audio Controller and Visualizer
+// music.js - Music and Audio Control
 // ============================================================
 
 class MusicController {
   constructor() {
     this.audio = document.getElementById('music');
+    this.isPlaying = false;
     this.audioContext = null;
     this.analyser = null;
     this.dataArray = null;
-    this.isPlaying = false;
-    this.volume = 0.5;
     this.init();
   }
 
   init() {
-    if (!window.AudioContext && !window.webkitAudioContext) {
-      console.warn('Web Audio API not supported');
-      return;
-    }
+    this.audio.addEventListener('play', () => {
+      this.isPlaying = true;
+      this.setupAudioContext();
+    });
 
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    this.audioContext = new AudioContext();
-
-    // Create analyser node
-    this.analyser = this.audioContext.createAnalyser();
-    this.analyser.fftSize = 256;
-
-    // Create volume control
-    this.gainNode = this.audioContext.createGain();
-    this.gainNode.connect(this.analyser);
-    this.analyser.connect(this.audioContext.destination);
-
-    // Setup audio element source
-    if (this.audio) {
-      const source = this.audioContext.createMediaElementAudioSource(this.audio);
-      source.connect(this.gainNode);
-
-      this.audio.volume = this.volume;
-    }
-
-    // Frequency data array
-    const bufferLength = this.analyser.frequencyBinCount;
-    this.dataArray = new Uint8Array(bufferLength);
-
-    // User interaction to start audio
-    document.addEventListener('click', () => this.resumeAudioContext());
-    document.addEventListener('touchstart', () => this.resumeAudioContext());
+    this.audio.addEventListener('pause', () => {
+      this.isPlaying = false;
+    });
   }
 
-  resumeAudioContext() {
-    if (this.audioContext && this.audioContext.state === 'suspended') {
-      this.audioContext.resume();
+  setupAudioContext() {
+    if (this.audioContext) return;
+
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      this.analyser = audioContext.createAnalyser();
+      this.analyser.fftSize = 256;
+      this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+
+      const source = audioContext.createMediaElementAudioSource(this.audio);
+      source.connect(this.analyser);
+      this.analyser.connect(audioContext.destination);
+
+      this.audioContext = audioContext;
+    } catch (e) {
+      console.warn('Audio context not available:', e);
     }
   }
 
   play() {
     if (this.audio) {
-      this.resumeAudioContext();
-      this.audio.play().catch(err => {
-        console.log('Autoplay prevented:', err);
-      });
-      this.isPlaying = true;
+      this.audio.play().catch(err => console.log('Playback error:', err));
     }
   }
 
   pause() {
     if (this.audio) {
       this.audio.pause();
-      this.isPlaying = false;
     }
   }
 
@@ -80,91 +63,29 @@ class MusicController {
     }
   }
 
-  setVolume(value) {
-    this.volume = Math.max(0, Math.min(1, value));
+  setVolume(volume) {
     if (this.audio) {
-      this.audio.volume = this.volume;
-    }
-    if (this.gainNode) {
-      this.gainNode.gain.value = this.volume;
+      this.audio.volume = Math.max(0, Math.min(1, volume));
     }
   }
 
   getFrequencies() {
-    if (!this.analyser) return null;
-    this.analyser.getByteFrequencyData(this.dataArray);
-    return this.dataArray;
-  }
-
-  getAverageFrequency() {
-    const frequencies = this.getFrequencies();
-    if (!frequencies) return 0;
-    const average = frequencies.reduce((a, b) => a + b) / frequencies.length;
-    return average / 255;
-  }
-
-  createAudioVisualizer() {
-    const canvas = document.createElement('canvas');
-    canvas.id = 'audioVisualizer';
-    canvas.width = window.innerWidth;
-    canvas.height = 100;
-    canvas.style.position = 'fixed';
-    canvas.style.bottom = '0';
-    canvas.style.left = '0';
-    canvas.style.zIndex = '10';
-    canvas.style.opacity = '0.3';
-    document.body.appendChild(canvas);
-
-    const ctx = canvas.getContext('2d');
-    const draw = () => {
-      const frequencies = this.getFrequencies();
-      if (!frequencies) {
-        requestAnimationFrame(draw);
-        return;
-      }
-
-      ctx.fillStyle = 'rgb(0, 0, 0)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      const barWidth = (canvas.width / frequencies.length) * 2.5;
-      let barHeight;
-      let x = 0;
-
-      for (let i = 0; i < frequencies.length; i++) {
-        barHeight = (frequencies[i] / 255) * canvas.height;
-
-        // Color gradient
-        const hue = (i / frequencies.length) * 360;
-        ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
-        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-
-        x += barWidth + 1;
-      }
-
-      requestAnimationFrame(draw);
-    };
-
-    draw();
+    if (this.analyser && this.dataArray) {
+      this.analyser.getByteFrequencyData(this.dataArray);
+      return this.dataArray;
+    }
+    return null;
   }
 
   addAudioReactiveEffect() {
+    if (!this.analyser) return;
+
     const animate = () => {
-      const average = this.getAverageFrequency();
-
-      // Scale galaxy based on music
-      galaxyScene.galaxies.forEach(galaxy => {
-        galaxy.mesh.scale.set(
-          1 + average * 0.3,
-          1 + average * 0.3,
-          1 + average * 0.3
-        );
-      });
-
-      // Camera shake on bass
-      if (average > 0.6) {
-        cameraController.shake(0.2, 50);
+      const frequencies = this.getFrequencies();
+      if (frequencies && typeof galaxySystem !== 'undefined') {
+        const average = frequencies.reduce((a, b) => a + b) / frequencies.length / 255;
+        galaxySystem.respondToAudio(average);
       }
-
       requestAnimationFrame(animate);
     };
 
@@ -172,13 +93,7 @@ class MusicController {
   }
 }
 
-// Initialize music controller
-const musicController = new MusicController();
-
-// Auto-play music when entering experience
-document.getElementById('startButton').addEventListener('click', () => {
-  setTimeout(() => {
-    musicController.play();
-    musicController.addAudioReactiveEffect();
-  }, 500);
+let musicController;
+window.addEventListener('DOMContentLoaded', () => {
+  musicController = new MusicController();
 });
