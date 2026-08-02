@@ -1,6 +1,6 @@
 // ============================================================
-// NUESTRO UNIVERSO ❤️
-// main.js - Main Controller
+// PARA MI FUTURA ESPOSA ❤️
+// main.js - Main Controller - CORREGIDO
 // ============================================================
 
 class UniversoController {
@@ -8,193 +8,76 @@ class UniversoController {
     this.currentSection = 0;
     this.isScrolling = false;
     this.scrollTimeout = null;
-    this.sections = [
-      { id: 'loading', duration: 0 },
-      { id: 'message', duration: 3 },
-      { id: 'photo', duration: 3 },
-      { id: 'letter', duration: 3 },
-      { id: 'final', duration: 3 }
-    ];
     this.init();
   }
 
   init() {
     this.setupEventListeners();
-    this.startLoadingAnimation();
+    this.handleLoadingScreen();
   }
 
   setupEventListeners() {
     // Start button
-    document.getElementById('startButton').addEventListener('click', () => {
+    const startBtn = document.getElementById('startButton');
+    if (startBtn) {
+      startBtn.addEventListener('click', () => this.hideLoading());
+    }
+
+    // Music toggle
+    const musicToggle = document.getElementById('musicToggle');
+    if (musicToggle) {
+      musicToggle.addEventListener('click', () => this.toggleMusic());
+    }
+  }
+
+  handleLoadingScreen() {
+    const loading = document.getElementById('loading');
+    if (!loading) return;
+
+    // Auto-hide loading after 3 seconds
+    setTimeout(() => {
       this.hideLoading();
-    });
-
-    // Scroll events
-    window.addEventListener('wheel', (e) => this.handleScroll(e), { passive: true });
-    window.addEventListener('touchmove', (e) => this.handleTouchScroll(e), { passive: true });
-
-    // Keyboard navigation
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowDown') this.nextSection();
-      if (e.key === 'ArrowUp') this.previousSection();
-    });
-
-    // Responsive adjustments
-    window.addEventListener('resize', () => {
-      if (window.innerWidth < 768) {
-        this.adjustForMobile();
-      }
-    });
+    }, 3000);
   }
 
   hideLoading() {
     const loading = document.getElementById('loading');
+    if (!loading) return;
+
     loading.style.opacity = '0';
     loading.style.pointerEvents = 'none';
     
     setTimeout(() => {
       loading.style.display = 'none';
-      this.showSection(0);
+      this.startMusic();
+      this.triggerInitialEffects();
     }, 500);
   }
 
-  startLoadingAnimation() {
-    const starEmoji = document.querySelector('.loader h1');
-    setInterval(() => {
-      starEmoji.style.animation = 'none';
-      setTimeout(() => {
-        starEmoji.style.animation = 'pulseHeart 2s infinite';
-      }, 10);
-    }, 3000);
+  startMusic() {
+    const audio = document.getElementById('music');
+    if (audio) {
+      audio.play().catch(err => console.log('Audio play failed:', err));
+    }
   }
 
-  handleScroll(event) {
-    if (this.isScrolling) return;
-    
-    const direction = event.deltaY > 0 ? 'down' : 'up';
-    
-    clearTimeout(this.scrollTimeout);
-    this.isScrolling = true;
-    
-    if (direction === 'down') {
-      this.nextSection();
+  toggleMusic() {
+    const audio = document.getElementById('music');
+    const btn = document.getElementById('musicToggle');
+    if (!audio || !btn) return;
+
+    if (audio.paused) {
+      audio.play();
+      btn.textContent = '🔊';
     } else {
-      this.previousSection();
-    }
-
-    this.scrollTimeout = setTimeout(() => {
-      this.isScrolling = false;
-    }, 800);
-  }
-
-  handleTouchScroll(event) {
-    // Touch scroll handling for mobile
-    if (this.touchStartY === undefined) {
-      this.touchStartY = event.touches[0].clientY;
-      return;
-    }
-
-    const touchEndY = event.touches[0].clientY;
-    const diff = this.touchStartY - touchEndY;
-
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) {
-        this.nextSection();
-      } else {
-        this.previousSection();
-      }
-      this.touchStartY = touchEndY;
+      audio.pause();
+      btn.textContent = '🔇';
     }
   }
 
-  nextSection() {
-    if (this.currentSection < this.sections.length - 1) {
-      this.currentSection++;
-      this.showSection(this.currentSection);
-    }
-  }
-
-  previousSection() {
-    if (this.currentSection > 0) {
-      this.currentSection--;
-      this.showSection(this.currentSection);
-    }
-  }
-
-  showSection(index) {
-    const section = this.sections[index];
-    
-    // Hide all sections
-    document.getElementById('overlay').style.opacity = '0';
-    document.getElementById('messageBox').style.opacity = '0';
-    document.getElementById('photoContainer').style.opacity = '0';
-    document.getElementById('letter').style.opacity = '0';
-    document.getElementById('final').style.opacity = '0';
-
-    // Show current section
-    setTimeout(() => {
-      switch(index) {
-        case 0:
-          this.showOverlay();
-          break;
-        case 1:
-          this.showMessage();
-          break;
-        case 2:
-          this.showPhoto();
-          break;
-        case 3:
-          this.showLetter();
-          break;
-        case 4:
-          this.showFinal();
-          break;
-      }
-    }, 200);
-  }
-
-  showOverlay() {
-    document.getElementById('overlay').style.opacity = '1';
-    triggerParticles(50);
-  }
-
-  showMessage() {
-    const box = document.getElementById('messageBox');
-    box.style.opacity = '1';
-    box.style.transform = 'translateX(-50%) translateY(0)';
-    triggerParticles(30);
-    createShootingStars(3);
-  }
-
-  showPhoto() {
-    const container = document.getElementById('photoContainer');
-    container.style.opacity = '1';
-    container.style.transform = 'translate(-50%, -50%) scale(1)';
-    triggerHearts(20);
-  }
-
-  showLetter() {
-    const letter = document.getElementById('letter');
-    letter.style.opacity = '1';
-    letter.style.transform = 'translate(-50%, -50%) scale(1)';
-    triggerHearts(15);
-    createConfetti(50);
-  }
-
-  showFinal() {
-    const final = document.getElementById('final');
-    final.style.opacity = '1';
-    triggerFireworks();
+  triggerInitialEffects() {
     triggerHearts(30);
-    playConfetti(100);
-  }
-
-  adjustForMobile() {
-    // Mobile-specific adjustments if needed
-    const loader = document.querySelector('.loader');
-    if (loader) {
-      loader.style.width = '95%';
-    }
+    triggerParticles(50);
   }
 }
 
@@ -202,92 +85,123 @@ class UniversoController {
 // PARTICLE EFFECTS
 // ============================================================
 
-function triggerParticles(count) {
+function triggerParticles(count = 30) {
   for (let i = 0; i < count; i++) {
     const particle = document.createElement('div');
     particle.className = 'particle';
-    particle.style.left = Math.random() * 100 + '%';
-    particle.style.bottom = '-10px';
-    particle.style.width = Math.random() * 3 + 2 + 'px';
+    particle.style.position = 'fixed';
+    particle.style.left = Math.random() * window.innerWidth + 'px';
+    particle.style.bottom = '-20px';
+    particle.style.width = (Math.random() * 6 + 3) + 'px';
     particle.style.height = particle.style.width;
-    particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
-    particle.style.animationDelay = Math.random() * 0.5 + 's';
+    particle.style.backgroundColor = '#F5DEB3';
+    particle.style.borderRadius = '50%';
+    particle.style.pointerEvents = 'none';
+    particle.style.zIndex = '10';
+    particle.style.boxShadow = '0 0 10px rgba(245, 222, 179, 0.8)';
+    particle.style.animation = `particleRise ${(Math.random() * 4 + 3)}s linear forwards`;
+    particle.style.animationDelay = (Math.random() * 0.5) + 's';
+    
     document.body.appendChild(particle);
 
-    setTimeout(() => particle.remove(), 5000);
+    setTimeout(() => particle.remove(), 7000);
   }
 }
 
-function triggerHearts(count) {
+function triggerHearts(count = 30) {
   for (let i = 0; i < count; i++) {
     const heart = document.createElement('div');
     heart.className = 'heart';
     heart.textContent = '❤️';
-    heart.style.left = Math.random() * 100 + '%';
-    heart.style.bottom = '-20px';
-    heart.style.fontSize = Math.random() * 20 + 20 + 'px';
-    heart.style.animationDuration = (Math.random() * 2 + 2.5) + 's';
-    heart.style.animationDelay = Math.random() * 0.3 + 's';
+    heart.style.position = 'fixed';
+    heart.style.left = Math.random() * window.innerWidth + 'px';
+    heart.style.bottom = '-50px';
+    heart.style.fontSize = (Math.random() * 30 + 20) + 'px';
+    heart.style.pointerEvents = 'none';
+    heart.style.zIndex = '10';
+    heart.style.filter = 'drop-shadow(0 0 8px rgba(220, 20, 60, 0.6))';
+    heart.style.animation = `heartRise ${(Math.random() * 4 + 3)}s linear forwards`;
+    heart.style.animationDelay = (Math.random() * 0.3) + 's';
+    
     document.body.appendChild(heart);
 
-    setTimeout(() => heart.remove(), 4000);
+    setTimeout(() => heart.remove(), 7500);
   }
 }
 
-function createShootingStars(count) {
+function createShootingStars(count = 3) {
   for (let i = 0; i < count; i++) {
     const star = document.createElement('div');
     star.className = 'shooting-star';
-    star.style.top = Math.random() * 60 + '%';
-    star.style.left = '-200px';
+    star.style.top = Math.random() * 50 + '%';
+    star.style.left = '-100px';
     star.style.animationDuration = (Math.random() * 1 + 1.5) + 's';
-    star.style.animationDelay = Math.random() * 0.5 + 's';
+    star.style.animationDelay = i * 0.3 + 's';
+    
     document.body.appendChild(star);
-
-    setTimeout(() => star.remove(), 2500);
+    setTimeout(() => star.remove(), 3000);
   }
 }
 
-function createConfetti(count) {
+function triggerConfetti(count = 50) {
+  const colors = ['#DC143C', '#1E90FF', '#F5DEB3', '#1A1A1A'];
+  
   for (let i = 0; i < count; i++) {
     const confetti = document.createElement('div');
-    confetti.style.position = 'absolute';
-    confetti.style.width = '8px';
-    confetti.style.height = '8px';
-    confetti.style.background = ['#ff4da6', '#6d5dfc', '#38bdf8', '#ffd166'][
-      Math.floor(Math.random() * 4)
-    ];
-    confetti.style.left = Math.random() * 100 + '%';
-    confetti.style.top = '-10px';
+    confetti.style.position = 'fixed';
+    confetti.style.width = (Math.random() * 8 + 5) + 'px';
+    confetti.style.height = confetti.style.width;
+    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.left = Math.random() * window.innerWidth + 'px';
+    confetti.style.top = '-20px';
     confetti.style.borderRadius = '50%';
     confetti.style.pointerEvents = 'none';
-    
-    const duration = Math.random() * 2 + 1.5;
-    const xMove = (Math.random() - 0.5) * 200;
-    const rotation = Math.random() * 360;
+    confetti.style.zIndex = '10';
+    confetti.style.opacity = '1';
 
-    confetti.animate([
-      {
-        transform: `translate(0, 0) rotate(0deg)`,
-        opacity: 1
-      },
-      {
-        transform: `translate(${xMove}px, ${window.innerHeight}px) rotate(${rotation}deg)`,
-        opacity: 0
-      }
-    ], {
-      duration: duration * 1000,
-      easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-    });
+    const duration = Math.random() * 3 + 2;
+    const xMove = (Math.random() - 0.5) * 300;
+
+    confetti.style.animation = `confettiFall ${duration}s linear forwards`;
+    confetti.style.setProperty('--tx', xMove + 'px');
 
     document.body.appendChild(confetti);
     setTimeout(() => confetti.remove(), duration * 1000);
   }
 }
 
-function playConfetti(count) {
-  for (let i = 0; i < count; i++) {
-    setTimeout(() => createConfetti(10), i * 50);
+function triggerFireworks() {
+  const burstColors = ['#DC143C', '#1E90FF', '#F5DEB3'];
+  
+  for (let j = 0; j < 5; j++) {
+    setTimeout(() => {
+      const color = burstColors[Math.floor(Math.random() * burstColors.length)];
+      
+      for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.style.position = 'fixed';
+        particle.style.width = '6px';
+        particle.style.height = '6px';
+        particle.style.backgroundColor = color;
+        particle.style.borderRadius = '50%';
+        particle.style.left = '50%';
+        particle.style.top = '50%';
+        particle.style.pointerEvents = 'none';
+        particle.style.zIndex = '10';
+        
+        const angle = (i / 20) * Math.PI * 2;
+        const velocity = Math.random() * 5 + 3;
+        const vx = Math.cos(angle) * velocity;
+        const vy = Math.sin(angle) * velocity;
+        
+        particle.style.animation = `explode 1.5s ease-out forwards`;
+        particle.style.setProperty('--vx', vx);
+        particle.style.setProperty('--vy', vy);
+        
+        document.body.appendChild(particle);
+        setTimeout(() => particle.remove(), 1500);
+      }
+    }, j * 200);
   }
 }
 
@@ -298,4 +212,36 @@ function playConfetti(count) {
 document.addEventListener('DOMContentLoaded', () => {
   const universo = new UniversoController();
   window.universo = universo;
+
+  // Scroll event listeners for effects
+  window.addEventListener('scroll', () => {
+    const sections = ['overlay', 'messageBox', 'photoContainer', 'letter', 'final'];
+    
+    sections.forEach(id => {
+      const element = document.getElementById(id);
+      if (!element) return;
+      
+      const rect = element.getBoundingClientRect();
+      const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+      
+      if (isVisible && !element.dataset.effectTriggered) {
+        element.dataset.effectTriggered = 'true';
+        
+        if (id === 'messageBox') {
+          triggerHearts(20);
+          createShootingStars(2);
+        } else if (id === 'photoContainer') {
+          triggerHearts(15);
+          triggerParticles(30);
+        } else if (id === 'letter') {
+          triggerHearts(20);
+          triggerConfetti(40);
+        } else if (id === 'final') {
+          triggerFireworks();
+          triggerHearts(40);
+          triggerConfetti(80);
+        }
+      }
+    });
+  });
 });
